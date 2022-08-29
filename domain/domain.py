@@ -136,6 +136,8 @@ class DomainEngine:
         logging.debug("preparing pruned co-occurring statistics...")
         tic = time.clock()
         self.pair_stats = self._pruned_pair_stats(pair_stats)
+        # print("pair_stats")
+        # print(pair_stats)
         logging.debug("DONE with pruned co-occurring statistics in %.2f secs", time.clock() - tic)
         self.setup_complete = True
 
@@ -166,6 +168,10 @@ class DomainEngine:
                     tau = float(self.domain_thresh_1*denominator)
                     top_cands = [val2 for (val2, count) in pair_stats[attr1][attr2][val1].items() if count > tau]
                     out[attr1][attr2][val1] = top_cands
+                    if(attr1=='aid' and attr2=='name' and val1=='1156'):
+                        print("found our example")
+                        print(f"denominator = {denominator}, domain_thresh_1={self.domain_thresh_1}, tau={tau}")
+                        print(f"top_cands: {top_cands}")
         return out
 
     def get_active_attributes(self):

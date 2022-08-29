@@ -78,6 +78,7 @@ class DenialConstraint:
         # Create CNF form of the DC
         cnf_forms = [predicate.cnf_form for predicate in self.predicates]
         self.cnf_form = " AND ".join(cnf_forms)
+        logging.debug('DONE extracting tuples from constraint: %s', self.cnf_form)
 
 
 class Predicate:

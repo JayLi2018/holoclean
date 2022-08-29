@@ -28,6 +28,9 @@ class DBengine:
         self.conn_args = con
         self.engine = sql.create_engine(url, client_encoding='utf8', pool_size=pool_size)
 
+    def close_engine(self):
+        self.engine.dispose()
+
     def execute_queries(self, queries):
         """
         Executes :param queries: in parallel.

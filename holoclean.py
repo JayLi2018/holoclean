@@ -15,8 +15,8 @@ from evaluate import EvalEngine
 logging.basicConfig(format="%(asctime)s - [%(levelname)5s] - %(message)s", datefmt='%H:%M:%S')
 root_logger = logging.getLogger()
 gensim_logger = logging.getLogger('gensim')
-root_logger.setLevel(logging.INFO)
-gensim_logger.setLevel(logging.WARNING)
+root_logger.setLevel(logging.CRITICAL)
+gensim_logger.setLevel(logging.CRITICAL)
 
 
 # Arguments for HoloClean
