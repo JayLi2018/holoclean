@@ -3,25 +3,23 @@
 from examples.holoclean_repair_example import main 
 import psycopg2
 from itertools import combinations
-
-
-
-
-rule_dir = '/home/jayli/Desktop/holoclean/testdata/'
-file = open(rule_dir+'dc_finder_hospital_rules.txt', mode='r', encoding = "ISO-8859-1")
-
-all_rules = file.readlines()
+import pickle
+import time
 # print(all_rules)
+
+
+
 
 def retrain(filename, new_rules, attr_name, tid):
 	
 	conn = psycopg2.connect(dbname="holo", user="holocleanuser", password="abcd1234")
 	cur = conn.cursor()
-
-	with open(filename, 'w') as file:
+	with open(filename+'.txt', 'w') as file:
 		file.write(''.join(new_rules))
-	
-	main()
+	file.close()
+	print(f"filename:{filename}")
+	print(f"new_rules: {new_rules}")
+	main(filename)
 
 	query = f"""
 	SELECT t1._tid_ FROM  "hospital_repaired" as t1, "hospital_clean" as t2 
@@ -38,7 +36,13 @@ def retrain(filename, new_rules, attr_name, tid):
 	else:
 		return True
 
-def rule_responsibility(attr_name,tid):
+def rule_responsibility(attr_name,tid, size):
+
+	start_time = time.time()
+	rule_dir = '/home/opc/chenjie/holoclean/testdata/'
+	file = open(rule_dir+f'dc_finder_hospital_rules_{size}.txt', mode='r', encoding = "ISO-8859-1")
+
+	all_rules = file.readlines()
 
 	rule_contingencies  = {}
 	contingency_cand_dict = {}
@@ -57,16 +61,20 @@ def rule_responsibility(attr_name,tid):
 	# is smaller than the smallest element in the heap root, then
 	# we can early stop
 	try_ind = 0
-	for f in all_rules:
-		for j in range(0, 10):
+	for j in range(0, 2):
+		for f in all_rules:
 			try_ind+=1
 			f_contingency_cands = contingency_cand_dict[f]
+
+			cand_cnt = 1
+			total_cands = len(list(combinations(f_contingency_cands,j)))
 			for con in combinations(f_contingency_cands,j):
+				print(f"progress: combsize={j}, current: {cand_cnt}/{total_cands}")
 				# contigency candidate, that is the set that needs to be
 				# removed first before f being removed
 				cause_cand = list(con)
 				contingency_cand = frozenset(cause_cand)
-				already_cached=False
+				# already_cached=False
 				cause_cand.append(f)
 				print("!!!!!!!!!!!!!!!!!!!!1cause cand!!!!!!!!!!!!!!!!!1")
 				print(cause_cand)
@@ -77,38 +85,38 @@ def rule_responsibility(attr_name,tid):
 				if(cause_set in model_results):
 					print(f"{cause_set} in model_results, and is {model_results[cause_set]}")
 					# look_up_cnt+=1
-					already_cached=True
+					# already_cached=True
 					result = model_results[cause_set]
-					print(f"{cause_set} is already_cached and is {result}")
+					# print(f"{cause_set} is already_cached and is {result}")
 				else:
 					# new_model_cnt+=1
 					print("$$$$$retraining!!!!$$$$$$$$$$$$$$$4")
-					result = retrain(filename=rule_dir+'dc_finder_hospital_rules.txt', new_rules=model_funs, attr_name=attr_name, tid=tid)
+					result = retrain(filename=f'/home/opc/chenjie/holoclean/testdata/dc_finder_hospital_rules_{size}_test', new_rules=model_funs, attr_name=attr_name, tid=tid)
 					model_results[cause_set]=result
 					# logger.critical(f'model_results len : {len(model_results)}')
 					# logger.critical(f"after training using {model_funs}: we get {flabel}")
 				if(result):
-					if(not already_cached):
-						conn = psycopg2.connect(dbname="holo", user="holocleanuser", password="abcd1234")
-						conn.autocommit = True
-						cur = conn.cursor()
-						cur.execute(f'ALTER TABLE hospital_repaired RENAME TO hospital_repaired_{try_ind}')
-						conn.close()
-						print(f"cause: {cause_cand} flipped to correct result, saved results to hospital_repaired_{try_ind}")
+					# if(not already_cached):
+					# 	conn = psycopg2.connect(dbname="holo", user="holocleanuser", password="abcd1234")
+					# 	conn.autocommit = True
+					# 	cur = conn.cursor()
+					# 	cur.execute(f'ALTER TABLE hospital_repaired RENAME TO hospital_repaired_{try_ind}')
+					# 	conn.close()
+					# 	print(f"cause: {cause_cand} flipped to correct result, saved results to hospital_repaired_{try_ind}")
 					# logger.critical(f'flipped to {flabel}')
 					if(len(contingency_cand)>0):
 						if(responsibilities[f][0]==-1):
 							if(contingency_cand not in model_results):
 								model_funs = [mf for mf in all_rules if (mf not in contingency_cand)]
-								result = retrain(filename=rule_dir+'dc_finder_hospital_rules.txt', new_rules=model_funs, attr_name=attr_name, tid=tid)
-								if(result):
-									try_ind+=1
-									conn = psycopg2.connect(dbname="holo", user="holocleanuser", password="abcd1234")
-									conn.autocommit = True
-									cur = conn.cursor()
-									cur.execute(f'ALTER TABLE hospital_repaired RENAME TO hospital_repaired_{try_ind}')
-									conn.close()
-									print(f"cause: {contingency_cand} flipped to correct result, saved results to hospital_repaired_{try_ind}")
+								result = retrain(filename=f'/home/opc/chenjie/holoclean/testdata/dc_finder_hospital_rules_{size}_test', new_rules=model_funs, attr_name=attr_name, tid=tid)
+								# if(result):
+									# try_ind+=1
+									# conn = psycopg2.connect(dbname="holo", user="holocleanuser", password="abcd1234")
+									# conn.autocommit = True
+									# cur = conn.cursor()
+									# cur.execute(f'ALTER TABLE hospital_repaired RENAME TO hospital_repaired_{try_ind}')
+									# conn.close()
+									# print(f"cause: {contingency_cand} flipped to correct result, saved results to hospital_repaired_{try_ind}")
 								model_results[contingency_cand] = result
 							if(not model_results[contingency_cand]):
 								responsibilities[f][0]=1/len(cause_cand)
@@ -122,14 +130,15 @@ def rule_responsibility(attr_name,tid):
 						break
 				print("model_results:")
 				print(model_results)
-
+				cand_cnt+=1
 		# print(f'we are done with {f}')
-		# logger.critical(model_results)
+		print(model_results)
 		# print(rule_contingencies)
 		print(responsibilities)
+		responsibilities['time']=round(time.time() - start_time,2)
 
-
-
+		with open(f'result_{size}.pickle', 'wb') as handle:
+		    pickle.dump(responsibilities, handle)
 
 # # print(query)
 

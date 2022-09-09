@@ -3,8 +3,8 @@ sys.path.append('../')
 import holoclean
 from detect import NullDetector, ViolationDetector
 from repair.featurize import *
-
-def main(initial_training=False):
+import shutil
+def main(file,initial_training=False):
     # 1. Setup a HoloClean session.
     hc = holoclean.HoloClean(
         db_name='holo',
@@ -19,7 +19,7 @@ def main(initial_training=False):
         learning_rate=0.001,
         threads=1,
         batch_size=1,
-        verbose=True,
+        verbose=False,
         timeout=3*60000,
         feature_norm=False,
         weight_norm=False,
@@ -27,11 +27,13 @@ def main(initial_training=False):
     ).session
 
     # 2. Load training data and denial constraints.
-    hc.load_data('hospital', '/home/jayli/Desktop/holoclean/testdata/hospital.csv')
+    hc.load_data('hospital', '/home/opc/chenjie/holoclean//testdata/hospital.csv')
     if(initial_training):
-        hc.load_dcs('/home/jayli/Desktop/holoclean/testdata/dc_finder_hospital_rules.txt')
+        hc.load_dcs(f'{file}.txt')
+        shutil.copyfile(f'{file}.txt', 
+            f'{file}_test.txt')
     else:
-        hc.load_dcs('/home/jayli/Desktop/holoclean/testdata/hospital_constraints_test.txt')
+        hc.load_dcs(f'{file}.txt')
     hc.ds.set_constraints(hc.get_dcs())
 
     # 3. Detect erroneous cells using these two detectors.
@@ -50,7 +52,7 @@ def main(initial_training=False):
     hc.repair_errors(featurizers)
 
     # 5. Evaluate the correctness of the results.
-    hc.evaluate(fpath='/home/jayli/Desktop/holoclean/testdata/hospital_clean.csv',
+    hc.evaluate(fpath='/home/opc/chenjie/holoclean/testdata/hospital_clean.csv',
                 tid_col='tid',
                 attr_col='attribute',
                 val_col='correct_val')
