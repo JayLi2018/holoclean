@@ -19,7 +19,7 @@ def main(file,initial_training=False):
         learning_rate=0.001,
         threads=1,
         batch_size=1,
-        verbose=False,
+        verbose=True,
         timeout=3*60000,
         feature_norm=False,
         weight_norm=False,
@@ -27,7 +27,7 @@ def main(file,initial_training=False):
     ).session
 
     # 2. Load training data and denial constraints.
-    hc.load_data('hospital', '/home/opc/chenjie/holoclean//testdata/hospital.csv')
+    hc.load_data('hospital', '/home/opc/chenjie/holoclean/testdata/hospital.csv')
     if(initial_training):
         hc.load_dcs(f'{file}.txt')
         shutil.copyfile(f'{file}.txt', 

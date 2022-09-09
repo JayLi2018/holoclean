@@ -1,7 +1,7 @@
 import logging
 
-operationsArr = ['<>', '<=', '>=', '=', '<', '>']
-operationSign = ['IQ', 'LTE', 'GTE', 'EQ', 'LT', 'GT']
+operationsArr = ['dummy','<>', '<=', '>=', '=', '<', '>']
+operationSign = ['dummy','IQ', 'LTE', 'GTE', 'EQ', 'LT', 'GT']
 
 
 def is_symmetric(operation):

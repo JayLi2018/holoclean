@@ -34,10 +34,13 @@ class ViolationDetector(Detector):
         tbl = self.ds.raw_data.name
         queries = []
         attrs = []
+        i=0
         for c in self.constraints:
+            print(f'i={i}')
             q = self.to_sql(tbl, c)
             queries.append(q)
             attrs.append(c.components)
+            i+=1
         # Execute Queries over the DBEngine of Dataset
         results = self.ds.engine.execute_queries(queries)
 
@@ -58,6 +61,8 @@ class ViolationDetector(Detector):
             query = self.gen_unary_query(tbl, c)
         else:
             query = self.gen_mult_query(tbl, c)
+        print(f"tuple_names: {c.tuple_names}")
+        print(f"components: {c.components}")
         return query
 
     def gen_unary_query(self, tbl, c):
