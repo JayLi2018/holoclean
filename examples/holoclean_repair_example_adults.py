@@ -27,11 +27,11 @@ def main(initial_training=False):
     ).session
 
     # 2. Load training data and denial constraints.
-    hc.load_data('author', '/home/jayli/Desktop/holoclean/testdata/holoclean_hauthor_100_errors.csv')
+    hc.load_data('adult', '/home/jayli/Desktop/holoclean/testdata/holoclean_hauthor_100_errors.csv')
     if(initial_training):
-        hc.load_dcs('/home/jayli/Desktop/holoclean/testdata/author_constraints.txt')
+        hc.load_dcs('/home/jayli/Desktop/holoclean/testdata/dc_finder_adult_rules.txt')
     else:
-        hc.load_dcs('/home/jayli/Desktop/holoclean/testdata/author_constraints_test.txt')
+        hc.load_dcs('/home/jayli/Desktop/holoclean/testdata/dc_finder_adult_rules.txt')
     hc.ds.set_constraints(hc.get_dcs())
 
     # 3. Detect erroneous cells using these two detectors.
