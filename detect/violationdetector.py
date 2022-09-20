@@ -36,7 +36,6 @@ class ViolationDetector(Detector):
         attrs = []
         i=0
         for c in self.constraints:
-            print(f'i={i}')
             q = self.to_sql(tbl, c)
             queries.append(q)
             attrs.append(c.components)
@@ -61,8 +60,6 @@ class ViolationDetector(Detector):
             query = self.gen_unary_query(tbl, c)
         else:
             query = self.gen_mult_query(tbl, c)
-        print(f"tuple_names: {c.tuple_names}")
-        print(f"components: {c.components}")
         return query
 
     def gen_unary_query(self, tbl, c):

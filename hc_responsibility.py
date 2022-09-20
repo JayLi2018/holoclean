@@ -62,7 +62,7 @@ def rule_responsibility(attr_name,tid, all_rules_file_name, rule_subset_file_nam
 	# is smaller than the smallest element in the heap root, then
 	# we can early stop
 	try_ind = 0
-	for j in range(0, len(all_rules)-1):
+	for j in range(0, 3):
 		for f in all_rules:
 			try_ind+=1
 			f_contingency_cands = contingency_cand_dict[f]
