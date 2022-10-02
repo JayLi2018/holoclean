@@ -1,6 +1,6 @@
 # given a set of DCs from holoclean, try deleting a set of rules
 # until we get the expected label
-from examples.holoclean_repair_example_adults import main 
+from holoclean.examples.holoclean_repair_example_adults import main 
 import psycopg2
 from itertools import combinations
 import pickle

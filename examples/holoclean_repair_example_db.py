@@ -1,8 +1,8 @@
 import sys
 sys.path.append('../')
 import holoclean
-from detect import ErrorsLoaderDetector
-from repair.featurize import *
+from holoclean.detect import ErrorsLoaderDetector
+from holoclean.repair.featurize import *
 
 
 # 1. Setup a HoloClean session.

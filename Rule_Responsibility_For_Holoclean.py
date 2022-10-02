@@ -12,7 +12,7 @@
 # In[2]:
 
 
-from examples.holoclean_repair_example import main
+from holoclean.examples.holoclean_repair_example import main
 import psycopg2
 import pandas as pd
 

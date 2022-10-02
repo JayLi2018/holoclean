@@ -7,9 +7,9 @@ import numpy as np
 from pyitlib import discrete_random_variable as drv
 from tqdm import tqdm
 
-from dataset import AuxTables, CellStatus
+from holoclean.dataset import AuxTables, CellStatus
 from .estimators import NaiveBayes
-from utils import NULL_REPR
+from holoclean.utils import NULL_REPR
 
 
 class DomainEngine:

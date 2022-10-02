@@ -12,7 +12,7 @@
 # In[1]:
 
 
-from examples.holoclean_repair_example import main
+from holoclean.examples.holoclean_repair_example import main
 import psycopg2
 import pandas as pd
 import copy
@@ -74,7 +74,6 @@ for s in ['10','18']:
     repaired_dict = {x:[] for x in cols}
 
 
-
     # iterate this dataframe to find all wrong predictions and list them to choose
     grouped = df_union_before_and_after.groupby('_tid_')
     k = 0
@@ -84,18 +83,15 @@ for s in ['10','18']:
         if(k%100==0):
             print(k)
         for c in cols:
-            if(group[group['type']=='after_clean'][c].to_string(index=False)           != group[group['type']=='before_clean'][c].to_string(index=False)):
+            if(group[group['type']=='after_clean'][c].to_string(index=False)!= group[group['type']=='before_clean'][c].to_string(index=False)):
                 repaired_dict[c].append(tid)
         k+=1
-
-
 
     for d,v in repaired_dict.items():
         print(f"{d}: {len(repaired_dict[d])}")
 
 
     wrong_dict = {x:[] for x in cols}
-
 
     # iterate this dataframe to find all wrong predictions and list them to choose
     grouped = df_union_before_and_after.groupby('_tid_')
@@ -114,10 +110,7 @@ for s in ['10','18']:
 
     wrong_cities=df_union_before_and_after[df_union_before_and_after['_tid_'].isin(wrong_dict['Stateavg'])]
 
-
-
     conn.close()
-
 
     # ### given an attribute and a tid (row id), find responsible rule(s)
 

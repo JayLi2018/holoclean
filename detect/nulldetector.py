@@ -1,7 +1,7 @@
 import pandas as pd
 
 from .detector import Detector
-from utils import NULL_REPR
+from holoclean.utils import NULL_REPR
 
 
 class NullDetector(Detector):

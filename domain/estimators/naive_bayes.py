@@ -3,7 +3,7 @@ import math
 from tqdm import tqdm
 
 from ..estimator import Estimator
-from utils import NULL_REPR
+from holoclean.utils import NULL_REPR
 
 
 class NaiveBayes(Estimator):

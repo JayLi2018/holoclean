@@ -7,7 +7,7 @@ import pandas as pd
 
 from .dbengine import DBengine
 from .table import Table, Source
-from utils import dictify_df, NULL_REPR
+from holoclean.utils import dictify_df, NULL_REPR
 
 
 class AuxTables(Enum):

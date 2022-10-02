@@ -1,6 +1,6 @@
-from detect import NullDetector, ViolationDetector
+from holoclean.detect import NullDetector, ViolationDetector
 import holoclean
-from repair.featurize import *
+from holoclean.repair.featurize import *
 
 from tests.testutils import random_database, delete_database
 

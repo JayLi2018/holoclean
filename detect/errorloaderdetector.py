@@ -1,6 +1,6 @@
 import pandas as pd
 
-from dataset.table import Table, Source
+from holoclean.dataset.table import Table, Source
 from .detector import Detector
 
 
