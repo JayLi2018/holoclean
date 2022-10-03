@@ -134,11 +134,11 @@ class DomainEngine:
         self.total = total
         self.single_stats = single_stats
         logging.debug("preparing pruned co-occurring statistics...")
-        tic = time.clock()
+        tic = time.perf_counter()
         self.pair_stats = self._pruned_pair_stats(pair_stats)
         # print("pair_stats")
         # print(pair_stats)
-        logging.debug("DONE with pruned co-occurring statistics in %.2f secs", time.clock() - tic)
+        logging.debug("DONE with pruned co-occurring statistics in %.2f secs", time.perf_counter() - tic)
         self.setup_complete = True
 
     def _pruned_pair_stats(self, pair_stats):
@@ -237,7 +237,7 @@ class DomainEngine:
                 "Call <setup_attributes> to setup active attributes. Error detection should be performed before setup.")
 
         logging.debug('generating initial set of un-pruned domain values...')
-        tic = time.clock()
+        tic = time.perf_counter()
         # Iterate over dataset rows.
         cells = []
         vid = 0
@@ -303,7 +303,7 @@ class DomainEngine:
                               "fixed": cell_status})
                 vid += 1
         domain_df = pd.DataFrame(data=cells).sort_values('_vid_')
-        logging.debug('DONE generating initial set of domain values in %.2f', time.clock() - tic)
+        logging.debug('DONE generating initial set of domain values in %.2f', time.perf_counter() - tic)
 
         # Skip estimator model since we do not require any weak labelling or domain
         # pruning based on posterior probabilities.
@@ -313,18 +313,18 @@ class DomainEngine:
         # Run pruned domain values from correlated attributes above through
         # posterior model for a naive probability estimation.
         logging.debug('training posterior model for estimating domain value probabilities...')
-        tic = time.clock()
+        tic = time.perf_counter()
         estimator = NaiveBayes(self.env, self.ds, domain_df, self.correlations)
-        logging.debug('DONE training posterior model in %.2fs', time.clock() - tic)
+        logging.debug('DONE training posterior model in %.2fs', time.perf_counter() - tic)
 
         # Predict probabilities for all pruned domain values.
         logging.debug('predicting domain value probabilities from posterior model...')
-        tic = time.clock()
+        tic = time.perf_counter()
         preds_by_cell = estimator.predict_pp_batch()
-        logging.debug('DONE predictions in %.2f secs, re-constructing cell domain...', time.clock() - tic)
+        logging.debug('DONE predictions in %.2f secs, re-constructing cell domain...', time.perf_counter() - tic)
 
         logging.debug('re-assembling final cell domain table...')
-        tic = time.clock()
+        tic = time.perf_counter()
         # iterate through raw/current data and generate posterior probabilities for
         # weak labelling
         num_weak_labels = 0
@@ -371,7 +371,7 @@ class DomainEngine:
 
         # update our cell domain df with our new updated domain
         domain_df = pd.DataFrame.from_records(updated_domain_df, columns=updated_domain_df[0].dtype.names).drop('index', axis=1).sort_values('_vid_')
-        logging.debug('DONE assembling cell domain table in %.2fs', time.clock() - tic)
+        logging.debug('DONE assembling cell domain table in %.2fs', time.perf_counter() - tic)
 
         logging.info('number of (additional) weak labels assigned from posterior model: %d', num_weak_labels)
 

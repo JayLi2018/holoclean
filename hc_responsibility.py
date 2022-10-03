@@ -1,6 +1,6 @@
 # given a set of DCs from holoclean, try deleting a set of rules
 # until we get the expected label
-from holoclean.examples.holoclean_repair_example_adults import main 
+from holoclean.examples.holoclean_repair import main 
 import psycopg2
 from itertools import combinations
 import pickle
@@ -8,26 +8,27 @@ import time
 from datetime import datetime
 
 # print(all_rules)
-
-
-
-
-def retrain(filename, new_rules, attr_name, tid, dataset_name):
-	
+def retrain(dc_input, new_rules, complaint):	
 	conn = psycopg2.connect(dbname="holo", user="holocleanuser", password="abcd1234")
 	cur = conn.cursor()
-	with open(filename+'.txt', 'w') as file:
+	# print(f"filename:{filename}")
+	# print(f"new_rules: {new_rules}")
+	# main(filename)
+	table_name=dc_input.input_csv_file.split('.')[0]
+	filename=dc_input.input_dc_dir+'subset_'+dc_input.input_dc_file
+	with open(filename, 'w') as file:
 		file.write(''.join(new_rules))
 	file.close()
-	print(f"filename:{filename}")
-	print(f"new_rules: {new_rules}")
-	main(filename)
+	main(table_name=table_name, csv_dir=dc_input.input_csv_dir,
+	    csv_file=dc_input.input_csv_file, dc_dir=dc_input.input_dc_dir, dc_file='subset_'+dc_input.input_dc_file, gt_dir=dc_input.ground_truth_dir, 
+	    gt_file=dc_input.ground_truth_file, initial_training=False)
 
+	attr_name=complaint.attr_name
+	tid=complaint.tid
 	query = f"""
-	SELECT t1._tid_ FROM  "{dataset_name}_repaired" as t1, "{dataset_name}_clean" as t2 
+	SELECT t1._tid_ FROM  "{table_name}_repaired" as t1, "{table_name}_clean" as t2 
 	WHERE t1._tid_ = t2._tid_ AND t2._attribute_ = '{attr_name}' and t1."{attr_name}"!=t2._value_;
 	"""
-
 	cur.execute(query)
 	results = cur.fetchall()
 	# print("!!!!!results!!!!!!!!!")
@@ -38,10 +39,12 @@ def retrain(filename, new_rules, attr_name, tid, dataset_name):
 	else:
 		return True
 
-def rule_responsibility(attr_name,tid, all_rules_file_name, rule_subset_file_name):
+def rule_responsibility(complaint, dc_input):
 
 	start_time = time.time()
-	file = open(f'{all_rules_file_name}.txt', mode='r', encoding = "ISO-8859-1")
+	input_file=dc_input.input_dc_dir+dc_input.input_dc_file
+	dataset_name=dc_input.input_csv_file.split('.')[0]
+	file = open(f'{input_file}', mode='r', encoding = "ISO-8859-1")
 
 	all_rules = file.readlines()
 
@@ -62,7 +65,7 @@ def rule_responsibility(attr_name,tid, all_rules_file_name, rule_subset_file_nam
 	# is smaller than the smallest element in the heap root, then
 	# we can early stop
 	try_ind = 0
-	for j in range(0, 3):
+	for j in range(0, 1):
 		for f in all_rules:
 			try_ind+=1
 			f_contingency_cands = contingency_cand_dict[f]
@@ -92,7 +95,7 @@ def rule_responsibility(attr_name,tid, all_rules_file_name, rule_subset_file_nam
 				else:
 					# new_model_cnt+=1
 					print("$$$$$retraining!!!!$$$$$$$$$$$$$$$4")
-					result = retrain(filename=rule_subset_file_name, new_rules=model_funs, attr_name=attr_name, tid=tid, dataset_name='adult')
+					result =  retrain(dc_input=dc_input,new_rules=model_funs, complaint=complaint)
 					model_results[cause_set]=result
 					# logger.critical(f'model_results len : {len(model_results)}')
 					# logger.critical(f"after training using {model_funs}: we get {flabel}")
@@ -109,7 +112,7 @@ def rule_responsibility(attr_name,tid, all_rules_file_name, rule_subset_file_nam
 						if(responsibilities[f][0]==-1):
 							if(contingency_cand not in model_results):
 								model_funs = [mf for mf in all_rules if (mf not in contingency_cand)]
-								result = retrain(filename=rule_subset_file_name, new_rules=model_funs, attr_name=attr_name, tid=tid, dataset_name='adult')
+								result = retrain(dc_input=dc_input,new_rules=model_funs, complaint=complaint)
 								# if(result):
 									# try_ind+=1
 									# conn = psycopg2.connect(dbname="holo", user="holocleanuser", password="abcd1234")
@@ -138,8 +141,8 @@ def rule_responsibility(attr_name,tid, all_rules_file_name, rule_subset_file_nam
 		print(responsibilities)
 
 
-		with open(f'result_{datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}.pickle', 'wb') as handle:
-		    pickle.dump(responsibilities, handle)
+		# with open(f'result_{datetime.now().strftime("%d-%m-%Y-%H-%M-%S")}.pickle', 'wb') as handle:
+		#     pickle.dump(responsibilities, handle)
 
 # # print(query)
 
