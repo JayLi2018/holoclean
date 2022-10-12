@@ -17,7 +17,10 @@ root_logger = logging.getLogger()
 gensim_logger = logging.getLogger('gensim')
 root_logger.setLevel(logging.CRITICAL)
 gensim_logger.setLevel(logging.CRITICAL)
-
+file_formatter = logging.Formatter('%(levelname)s %(asctime)s[%(filename)s:%(funcName)s:%(lineno)d]%(message)s')
+file_handler=logging.FileHandler('log_sample_run.txt', 'a')
+file_handler.setFormatter(file_formatter)
+root_logger.addHandler(file_handler)
 
 # Arguments for HoloClean
 arguments = [
@@ -233,7 +236,6 @@ class HoloClean:
         # Init empty session collection
         self.session = Session(arg_defaults)
 
-
 class Session:
     """
     Session class controls the entire pipeline of HC
@@ -266,6 +268,9 @@ class Session:
         self.detect_engine = DetectEngine(env, self.ds)
         self.repair_engine = RepairEngine(env, self.ds)
         self.eval_engine = EvalEngine(env, self.ds)
+
+    def set_timer(self, timer):
+        self.timer=timer
 
 
     def load_data(self, name, fpath, na_values=None, entity_col=None, src_col=None):
@@ -318,16 +323,20 @@ class Session:
         status, feat_time = self.repair_engine.setup_featurized_ds(featurizers)
         logging.info(status)
         logging.debug('Time to featurize data: %.2f secs', feat_time)
+        self.timer.params['featurize']=feat_time
         status, setup_time = self.repair_engine.setup_repair_model()
+        self.timer.params['setup_repair_model']=setup_time
         logging.info(status)
-        logging.debug('Time to setup repair model: %.2f secs', feat_time)
+        logging.debug('Time to setup repair model: %.2f secs', setup_time)
         status, fit_time = self.repair_engine.fit_repair_model()
+        self.timer.params['fit_repair_model']=fit_time
         logging.info(status)
         logging.debug('Time to fit repair model: %.2f secs', fit_time)
         status, infer_time = self.repair_engine.infer_repairs()
         logging.info(status)
         logging.debug('Time to infer correct cell values: %.2f secs', infer_time)
         status, time = self.ds.get_inferred_values()
+        self.timer.params['get_inferred_values']=infer_time
         logging.info(status)
         logging.debug('Time to collect inferred values: %.2f secs', time)
         status, time = self.ds.get_repaired_dataset()

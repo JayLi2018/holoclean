@@ -9,7 +9,6 @@ from .dbengine import DBengine
 from .table import Table, Source
 from holoclean.utils import dictify_df, NULL_REPR
 
-
 class AuxTables(Enum):
     c_cells        = 1
     dk_cells       = 2

@@ -4,17 +4,20 @@ import holoclean
 from holoclean.detect import NullDetector, ViolationDetector
 from holoclean.repair.featurize import *
 import shutil
-def main(table_name, csv_dir, csv_file, dc_dir, dc_file, gt_dir, gt_file, initial_training=False):
+from labelling_explanation.classes import HoloCleanTracker, HoloQueryTracker
+
+def main(table_name, csv_dir, csv_file, dc_dir, dc_file, gt_dir, gt_file, initial_training=False, pruned=False):
     # 1. Setup a HoloClean session.
-    hc = holoclean.HoloClean(
+
+    h=holoclean.HoloClean(
         db_name='holo',
-        domain_thresh_1=0,
-        domain_thresh_2=0,
+        domain_thresh_1=0.4,
+        domain_thresh_2=0.4,
         weak_label_thresh=0.99,
         max_domain=10000,
         cor_strength=0.6,
         nb_cor_strength=0.8,
-        epochs=10,
+        epochs=4,
         weight_decay=0.01,
         learning_rate=0.001,
         threads=1,
@@ -24,7 +27,11 @@ def main(table_name, csv_dir, csv_file, dc_dir, dc_file, gt_dir, gt_file, initia
         feature_norm=False,
         weight_norm=False,
         print_fw=True
-    ).session
+    )
+
+    hc =h.session
+    hc.set_timer(HoloCleanTracker())
+    hc.ds.engine.set_timer(HoloQueryTracker())
 
     # 2. Load training data and denial constraints.
     hc.load_data(table_name, csv_dir+csv_file)
@@ -56,6 +63,6 @@ def main(table_name, csv_dir, csv_file, dc_dir, dc_file, gt_dir, gt_file, initia
                 tid_col='tid',
                 attr_col='attribute',
                 val_col='correct_val')
-
     hc.ds.engine.close_engine()
 
+    return hc.timer, hc.ds.engine.timer

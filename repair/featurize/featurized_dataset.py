@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn.functional as F
-
+import time
 from holoclean.dataset import AuxTables, CellStatus
 from holoclean.utils import NULL_REPR
 
@@ -17,11 +17,17 @@ class FeaturizedDataset:
     def __init__(self, dataset, env, featurizers):
         self.ds = dataset
         self.env = env
+        tic = time.perf_counter()
         self.total_vars, self.classes = self.ds.get_domain_info()
+        toc = time.perf_counter()
+        logging.debug(f'Time to featurize data: get_domain_info: {toc - tic}')
         self.processes = self.env['threads']
+        tic = time.perf_counter()
         for f in featurizers:
             f.setup_featurizer(self.ds, self.processes, self.env['batch_size'])
+        toc = time.perf_counter()
         logging.debug('featurizing training data...')
+        logging.debug(f'Time to featurize data: setup_featurizer: {toc - tic}')
         tensors = [f.create_tensor() for f in featurizers]
         self.featurizer_info = [FeatInfo(featurizer.name,
                                          tensor.size()[2],

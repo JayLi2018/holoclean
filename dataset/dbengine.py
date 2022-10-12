@@ -28,6 +28,9 @@ class DBengine:
         self.conn_args = con
         self.engine = sql.create_engine(url, client_encoding='utf8', pool_size=pool_size)
 
+    def set_timer(self, timer):
+        self.timer=timer
+
     def close_engine(self):
         self.engine.dispose()
 
@@ -42,6 +45,7 @@ class DBengine:
         results = self._apply_func(partial(_execute_query, conn_args=self.conn_args), [(idx, q) for idx, q in enumerate(queries)])
         toc = time.perf_counter()
         logging.debug('Time to execute %d queries: %.2f secs', len(queries), toc-tic)
+        self.timer.params['query']+=(toc-tic)
         return results
 
     def execute_queries_w_backup(self, queries):
@@ -57,6 +61,7 @@ class DBengine:
             [(idx, q) for idx, q in enumerate(queries)])
         toc = time.perf_counter()
         logging.debug('Time to execute %d queries: %.2f secs', len(queries), toc-tic)
+        self.timer.params['query']+=(toc-tic)
         return results
 
     def execute_query(self, query):
